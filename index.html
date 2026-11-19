@@ -1,0 +1,2737 @@
+<!DOCTYPE html>
+<html lang="en"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIwNTQwMzc3OTEzODg0MjAyMTIyMCIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzFjYzY3OTY5NzU4NmE2ZDlfaW5kZXguaHRtbC00NDQifSwiZXhwIjoxNzk1MDY3MjMwLCJpYXQiOjE3OTUwNjM2MzAsImFsZyI6IlJTMjU2In0.W4iWvd0Xi_YSuSQLGaNCEb0hmyPAdth1v3ZALxU0wwHUk_OpsIijiuhRi0qvHZ3GAxDDJVbgzcvns6rsUJA_Mp1BHvtzKuZlrHiltgzh_ujhQQMElvGD8SafT65dIE6zhz1X4BOAAX2lh-moIAUW-ifZFvggjNiwgzEvWHXVzfUwxrsFfxnG8YHTsq4xsrUR-LRj4PNiAIPOsOAC4cD9p4-1yTBFyhU_n2g5Z5Qn6FBoSMOopsc8vywEM3eQn1HOJ4pfi9KDo_ARFJvPsGYKh25itjOekZN2qr0hPnDLthWOxhM2O8Pd-vzeOceqsYQ2LKXs84vYjRv3heWeOCoazQ","c_1cc679697586a6d9_index.html-444")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.i=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.extensions="";var l=0,t=null,r=null,q=[],F=new TextEncoder,
+G=new TextDecoder;c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*
+16|0;return(f==="x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;
+(g=t)==null||g.postMessage(a)}};Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function() {
+  const OVERLAY_SELECTOR =
+    'dialog[open], [role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [role="combobox"]';
+
+  function isVisibleOverlay(element) {
+    if (element.closest('[hidden], [aria-hidden="true"], [inert]')) {
+      return false;
+    }
+    if (window.getComputedStyle(element).visibility === 'hidden') {
+      return false;
+    }
+    for (let cur = element; cur; cur = cur.parentElement) {
+      if (window.getComputedStyle(cur).display === 'none') {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function hasOpenOverlay() {
+    const candidates = document.querySelectorAll(OVERLAY_SELECTOR);
+    for (let i = 0; i < candidates.length; i++) {
+      if (isVisibleOverlay(candidates[i])) {
+        return true;
+      }
+    }
+    try {
+      if (document.querySelector('[popover]:popover-open')) {
+        return true;
+      }
+    } catch (e) {
+      // Ignore engines that do not support :popover-open.
+    }
+    return false;
+  }
+
+  function isNonEmptySearchInput(target) {
+    return (
+      Boolean(target) &&
+      target.tagName === 'INPUT' &&
+      typeof target.type === 'string' &&
+      target.type.toLowerCase() === 'search' &&
+      typeof target.value === 'string' &&
+      target.value.length > 0
+    );
+  }
+
+  function shouldIgnoreEscape(event) {
+    return (
+      event.key !== 'Escape' ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.isComposing ||
+      event.repeat ||
+      event.keyCode === 229 ||
+      isNonEmptySearchInput(event.target)
+    );
+  }
+
+  let shouldIgnoreCaptureState = false;
+
+  window.addEventListener(
+    'keydown',
+    function(event) {
+      if (event.key === 'Escape') {
+        shouldIgnoreCaptureState =
+          hasOpenOverlay() || isNonEmptySearchInput(event.target);
+      }
+    },
+    {capture: true},
+  );
+
+  window.addEventListener('keydown', function(event) {
+    if (
+      shouldIgnoreEscape(event) ||
+      event.defaultPrevented ||
+      shouldIgnoreCaptureState
+    ) {
+      return;
+    }
+    const wasBlockedOnCapture = shouldIgnoreCaptureState;
+    queueMicrotask(function() {
+      if (event.defaultPrevented || wasBlockedOnCapture) {
+        return;
+      }
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({'type': 'escapeKey'}, '*');
+      }
+    });
+  });
+})();</script><script data-bard-client-injected="true">(function() {
+  function normalizeSlug(str) {
+    try {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^p{L}p{N}s_-]/gu, '')
+        .replace(/s+/g, '-');
+    } catch (e) {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9s_-]/g, '')
+        .replace(/s+/g, '-');
+    }
+  }
+
+  function findTargetElement(hash) {
+    if (!hash || hash === '#') {
+      return null;
+    }
+    const rawId = hash.startsWith('#') ? hash.slice(1) : hash;
+    let decodedId = rawId;
+    try {
+      decodedId = decodeURIComponent(rawId);
+    } catch (e) {
+      // Ignore URI malformed errors.
+    }
+
+    // 1. Direct ID match (raw and decoded).
+    let target = document.getElementById(rawId) || document.getElementById(decodedId);
+    if (target) {
+      return target;
+    }
+
+    // 2. Name attribute match (<a name="...">).
+    try {
+      if (typeof CSS !== 'undefined' && CSS.escape) {
+        target =
+          document.querySelector('[name="' + CSS.escape(rawId) + '"]') ||
+          document.querySelector('[name="' + CSS.escape(decodedId) + '"]');
+      } else {
+        const namedElements = document.getElementsByName(rawId);
+        if (namedElements && namedElements.length > 0) {
+          return namedElements[0];
+        }
+      }
+    } catch (e) {
+      // Ignore querySelector syntax errors.
+    }
+    if (target) {
+      return target;
+    }
+
+    // 3. Match heading text by slug (for Markdown TOCs where headings lack explicit IDs).
+    const targetSlug = normalizeSlug(decodedId);
+    if (targetSlug) {
+      for (const heading of document.querySelectorAll('h1, h2, h3, h4, h5, h6')) {
+        if (normalizeSlug(heading.textContent || '') === targetSlug) {
+          return heading;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  document.addEventListener('click', function(event) {
+    const target = event.target;
+    const anchor = target && typeof target.closest === 'function' ? target.closest('a') : null;
+    if (!anchor) {
+      return;
+    }
+
+    const href = anchor.getAttribute('href');
+    if (
+      !href ||
+      href.trim().toLowerCase().startsWith('javascript:') ||
+      anchor.hasAttribute('download')
+    ) {
+      return;
+    }
+
+    // Check if the link is an in-page hash / anchor link.
+    if (href.startsWith('#')) {
+      event.preventDefault();
+      const targetElement = findTargetElement(href);
+      if (targetElement) {
+        targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+      return;
+    }
+
+    // Check if the URL has the same origin/pathname but with a hash.
+    try {
+      const url = new URL(anchor.href, window.location.href);
+      if (
+        url.hash &&
+        url.origin === window.location.origin &&
+        url.pathname === window.location.pathname
+      ) {
+        event.preventDefault();
+        const targetElement = findTargetElement(url.hash);
+        if (targetElement) {
+          targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+        return;
+      }
+    } catch (e) {
+      // Fall through if URL parsing fails.
+    }
+
+    // For all external or full navigation links, prevent iframe-level navigation
+    // (which breaks in AGSA WebView or sandboxed iframes) and ensure they open
+    // safely in a new tab/window.
+    if (anchor.target !== '_blank') {
+      event.preventDefault();
+      window.open(anchor.href, '_blank', 'noopener,noreferrer');
+    }
+  }, {capture: true});
+})();</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Land of Dawn: Modal Auxiliary Mastery | Pastel 16-Bit RPG</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;family=VT323&amp;family=Quicksand:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-cream: #FFF8F0;
+    --bg-lavender: #F3E8FF;
+    --bg-mint: #E6F8F3;
+    --bg-peach: #FFEAE2;
+    --bg-sky: #E3F2FD;
+    --pastel-pink: #FFB5C2;
+    --pastel-purple: #C8A2FF;
+    --pastel-blue: #90CDF4;
+    --pastel-mint: #81E6D9;
+    --pastel-gold: #FBD38D;
+    --pastel-coral: #FEB2B2;
+    --wood-dark: #8D6E63;
+    --wood-mid: #BCAAA4;
+    --wood-light: #EFEBE9;
+    --stone-dark: #78909C;
+    --stone-light: #CFD8DC;
+    --text-main: #3D344B;
+    --text-muted: #6B5E7A;
+    --glow-purple: 0 0 18px rgba(200, 162, 255, 0.85);
+    --glow-gold: 0 0 18px rgba(251, 211, 141, 0.9);
+    --glow-pink: 0 0 18px rgba(255, 181, 194, 0.85);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    min-height: 100%;
+    font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-cream);
+    background-image:
+      radial-gradient(#E2D1F9 2px, transparent 2px),
+      radial-gradient(#FFD6E0 2px, #FFF8F0 2px);
+    background-size: 40px 40px;
+    background-position: 0 0, 20px 20px;
+    color: var(--text-main);
+    line-height: 1.65;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .pixel-font {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    line-height: 1.45;
+  }
+
+  .retro-sub {
+    font-family: 'VT323', 'Courier New', monospace;
+    font-size: 1.45rem;
+    letter-spacing: 0.5px;
+  }
+
+  /* Thick Pixel-Art Wooden & Stone Frames */
+  .wood-frame {
+    background: #FFFDFB;
+    border: 6px solid var(--wood-dark);
+    box-shadow:
+      inset 0 0 0 4px var(--wood-mid),
+      inset 0 0 0 8px var(--wood-light),
+      0 10px 0 rgba(141, 110, 99, 0.25),
+      0 16px 30px rgba(61, 52, 75, 0.08);
+    border-radius: 10px;
+    position: relative;
+  }
+
+  .stone-frame {
+    background: #F8FAFC;
+    border: 6px solid var(--stone-dark);
+    box-shadow:
+      inset 0 0 0 4px var(--stone-light),
+      0 8px 0 rgba(120, 144, 156, 0.25),
+      0 14px 28px rgba(61, 52, 75, 0.08);
+    border-radius: 10px;
+    position: relative;
+  }
+
+  .wood-frame::before, .wood-frame::after,
+  .stone-frame::before, .stone-frame::after {
+    content: "✦";
+    position: absolute;
+    font-size: 14px;
+    color: var(--pastel-gold);
+    text-shadow: 1px 1px 0 var(--wood-dark);
+    pointer-events: none;
+  }
+  .wood-frame::before, .stone-frame::before { top: 8px; left: 10px; }
+  .wood-frame::after, .stone-frame::after { top: 8px; right: 10px; }
+
+  /* Top Presentation HUD */
+  .deck-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(255, 248, 240, 0.96);
+    backdrop-filter: blur(8px);
+    border-bottom: 4px solid var(--pastel-purple);
+    padding: 10px 18px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 16px rgba(200, 162, 255, 0.25);
+  }
+
+  .brand-cluster {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .level-badge {
+    background: linear-gradient(135deg, var(--pastel-pink), var(--pastel-purple));
+    color: #fff;
+    padding: 6px 10px;
+    border: 3px solid var(--text-main);
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 0.62rem;
+    box-shadow: 3px 3px 0 var(--text-main);
+    border-radius: 4px;
+  }
+
+  .deck-title-mini {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 0.66rem;
+    color: var(--text-main);
+  }
+
+  .jump-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .slide-select {
+    font-family: 'VT323', 'Courier New', monospace;
+    font-size: 1.25rem;
+    padding: 5px 10px;
+    background: var(--bg-lavender);
+    color: var(--text-main);
+    border: 3px solid var(--text-main);
+    border-radius: 6px;
+    box-shadow: 3px 3px 0 var(--pastel-purple);
+    cursor: pointer;
+    outline: none;
+  }
+
+  .slide-counter-pill {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 0.62rem;
+    background: var(--pastel-gold);
+    color: var(--text-main);
+    border: 3px solid var(--text-main);
+    padding: 7px 10px;
+    border-radius: 6px;
+    box-shadow: 3px 3px 0 var(--text-main);
+  }
+
+  .hud-action-btn {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 0.58rem;
+    padding: 8px 10px;
+    background: var(--pastel-pink);
+    color: var(--text-main);
+    border: 3px solid var(--text-main);
+    border-radius: 6px;
+    box-shadow: 3px 3px 0 var(--text-main);
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+
+  .hud-action-btn:hover {
+    background: var(--pastel-gold);
+    transform: translate(-1px, -1px);
+  }
+
+  /* Toast notification for download feedback */
+  .save-toast {
+    position: fixed;
+    top: 72px;
+    right: 20px;
+    z-index: 2000;
+    background: var(--bg-mint);
+    color: var(--text-main);
+    border: 4px solid var(--text-main);
+    box-shadow: 4px 4px 0 var(--pastel-purple);
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-family: 'VT323', 'Courier New', monospace;
+    font-size: 1.3rem;
+    display: none;
+  }
+
+  /* Main Slide Viewport */
+  .presentation-stage {
+    max-width: 1240px;
+    min-height: calc(100vh - 145px);
+    margin: 18px auto 14px;
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .slide {
+    display: none;
+    animation: slideFadeIn 0.35s ease;
+    padding: 28px 24px;
+  }
+
+  .slide.active {
+    display: block;
+  }
+
+  @keyframes slideFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.99);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .slide-header {
+    text-align: center;
+    margin-bottom: 22px;
+  }
+
+  .slide-tag {
+    display: inline-block;
+    background: var(--pastel-gold);
+    color: var(--text-main);
+    border: 3px solid var(--text-main);
+    padding: 5px 14px;
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 0.6rem;
+    margin-bottom: 10px;
+    box-shadow: 3px 3px 0 var(--text-main);
+    border-radius: 4px;
+  }
+
+  .slide-header h2 {
+    font-size: clamp(1rem, 2.2vw, 1.55rem);
+    color: var(--text-main);
+    text-shadow: 2px 2px 0 var(--pastel-blue);
+  }
+
+  /* Slide 1 Hero Sprites (100% Inline SVG Pixel Art) */
+  .hero-slide-box {
+    background: linear-gradient(135deg, var(--bg-lavender) 0%, var(--bg-peach) 50%, var(--bg-sky) 100%);
+    text-align: center;
+    padding: 32px 22px;
+  }
+
+  .hero-emblem-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
+
+  .pixel-sprite-card {
+    background: #fff;
+    border: 4px solid var(--text-main);
+    box-shadow: 4px 4px 0 var(--pastel-purple);
+    padding: 10px;
+    border-radius: 8px;
+    width: 118px;
+    text-align: center;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .pixel-sprite-card:hover {
+    transform: translateY(-6px) rotate(-2deg);
+    box-shadow: 6px 6px 0 var(--pastel-pink), var(--glow-pink);
+  }
+
+  .pixel-svg-box {
+    width: 68px;
+    height: 68px;
+    margin: 0 auto;
+    border-radius: 4px;
+    border: 2px solid var(--pastel-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .pixel-sprite-card span {
+    display: block;
+    font-family: 'VT323', 'Courier New', monospace;
+    font-size: 1.15rem;
+    margin-top: 5px;
+    color: var(--text-main);
+    font-weight: bold;
+  }
+
+  .hero-slide-box h1 {
+    font-size: clamp(1.2rem, 2.8vw, 2.05rem);
+    color: var(--text-main);
+    text-shadow: 3px 3px 0 #fff, 5px 5px 0 var(--pastel-pink);
+    margin-bottom: 14px;
+  }
+
+  .hero-subtitle {
+    max-width: 800px;
+    margin: 0 auto 22px;
+    font-size: 1.08rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .status-bars {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .stat-pill {
+    background: #fff;
+    border: 3px solid var(--text-main);
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-family: 'VT323', 'Courier New', monospace;
+    font-size: 1.28rem;
+    box-shadow: 3px 3px 0 var(--pastel-mint);
+  }
+
+  /* Core Rules Slide Layout */
+  .rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(275px, 1fr));
+    gap: 18px;
+  }
+
+  .rule-card {
+    padding: 20px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .rule-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(200, 162, 255, 0.35), var(--glow-purple);
+  }
+
+  .rule-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .rule-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--bg-lavender);
+    border: 3px solid var(--text-main);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+
+  .rule-card h3 {
+    font-size: 0.78rem;
+    color: var(--text-main);
+  }
+
+  .rule-card p {
+    font-size: 0.98rem;
+    font-weight: 600;
+  }
+
+  /* Mindmap / Skill Tree Slide */
+  .skill-tree-wrapper {
+    padding: 22px 18px;
+    background: linear-gradient(180deg, var(--bg-sky) 0%, var(--bg-mint) 100%);
+  }
+
+  .mindmap-root {
+    max-width: 580px;
+    margin: 0 auto 28px;
+    background: #fff;
+    border: 5px solid var(--text-main);
+    box-shadow: 6px 6px 0 var(--pastel-gold), var(--glow-gold);
+    padding: 14px;
+    text-align: center;
+    border-radius: 10px;
+    position: relative;
+  }
+
+  .mindmap-root::after {
+    content: "";
+    position: absolute;
+    bottom: -28px;
+    left: 50%;
+    width: 4px;
+    height: 28px;
+    background: var(--text-main);
+    transform: translateX(-50%);
+  }
+
+  .mindmap-branches {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(225px, 1fr));
+    gap: 16px;
+    border-top: 4px solid var(--text-main);
+    padding-top: 22px;
+  }
+
+  .skill-node {
+    background: #fff;
+    border: 4px solid var(--text-main);
+    border-radius: 8px;
+    padding: 13px;
+    box-shadow: 4px 4px 0 var(--pastel-blue);
+    transition: all 0.22s ease;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .skill-node::before {
+    content: "";
+    position: absolute;
+    top: -26px;
+    left: 50%;
+    width: 4px;
+    height: 22px;
+    background: var(--text-main);
+    transform: translateX(-50%);
+  }
+
+  .skill-node:hover {
+    transform: scale(1.03);
+    background: var(--bg-lavender);
+    box-shadow: 6px 6px 0 var(--pastel-purple), var(--glow-purple);
+  }
+
+  .skill-node-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .skill-tier {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 0.54rem;
+    padding: 4px 7px;
+    background: var(--pastel-pink);
+    border: 2px solid var(--text-main);
+  }
+
+  .skill-node h4 {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 0.72rem;
+    margin-bottom: 6px;
+    color: var(--text-main);
+  }
+
+  .skill-node p {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  /* Modal Hero Slide Layout */
+  .panel-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    border-bottom: 4px dashed var(--pastel-purple);
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+  }
+
+  .panel-title-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .hero-avatar {
+    width: 72px;
+    height: 72px;
+    border: 4px solid var(--text-main);
+    border-radius: 8px;
+    background: var(--bg-peach);
+    padding: 4px;
+    box-shadow: 4px 4px 0 var(--pastel-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .hero-class-badge {
+    display: inline-block;
+    font-family: 'VT323', 'Courier New', monospace;
+    font-size: 1.2rem;
+    background: var(--bg-mint);
+    border: 2px solid var(--text-main);
+    padding: 2px 10px;
+    margin-bottom: 6px;
+    font-weight: bold;
+  }
+
+  .formula-box {
+    background: var(--bg-lavender);
+    border: 3px solid var(--text-main);
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-family: 'VT323', 'Courier New', monospace;
+    font-size: 1.38rem;
+    color: #553C9A;
+    box-shadow: 3px 3px 0 var(--pastel-purple);
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .meta-box {
+    background: var(--bg-cream);
+    border: 3px solid var(--wood-mid);
+    padding: 13px 15px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  .meta-box strong {
+    display: block;
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 0.6rem;
+    color: #805AD5;
+    margin-bottom: 6px;
+  }
+
+  .examples-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .examples-title {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 0.68rem;
+    color: var(--text-main);
+  }
+
+  .flip-all-btn {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 0.56rem;
+    padding: 7px 11px;
+    background: var(--bg-sky);
+    color: var(--text-main);
+    border: 3px solid var(--text-main);
+    border-radius: 6px;
+    box-shadow: 2px 2px 0 var(--text-main);
+    cursor: pointer;
+  }
+
+  .flip-all-btn:hover {
+    background: var(--pastel-gold);
+  }
+
+  .magic-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 16px;
+  }
+
+  .flip-card {
+    background-color: transparent;
+    min-height: 225px;
+    perspective: 1000px;
+    cursor: pointer;
+  }
+
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 225px;
+    transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+
+  .flip-card.flipped .flip-card-inner,
+  .flip-card:hover .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .flip-card-front, .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    border: 4px solid var(--text-main);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .flip-card-front {
+    background: linear-gradient(135deg, #FFFDFB 0%, var(--bg-peach) 100%);
+    box-shadow: 5px 5px 0 var(--pastel-pink);
+    text-align: center;
+    align-items: center;
+  }
+
+  .flip-card-front .card-rune {
+    font-size: 1.85rem;
+    margin-bottom: 8px;
+  }
+
+  .flip-card-front h4 {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 0.7rem;
+    color: var(--text-main);
+    margin-bottom: 10px;
+  }
+
+  .flip-hint {
+    font-family: 'VT323', 'Courier New', monospace;
+    font-size: 1.15rem;
+    background: #fff;
+    padding: 2px 10px;
+    border: 2px dashed var(--pastel-purple);
+    color: var(--text-muted);
+  }
+
+  .flip-card-back {
+    background: linear-gradient(135deg, #FFFFFF 0%, var(--bg-lavender) 100%);
+    box-shadow: 5px 5px 0 var(--pastel-purple), var(--glow-purple);
+    transform: rotateY(180deg);
+    text-align: left;
+  }
+
+  .flip-card-back .back-label {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 0.56rem;
+    color: #6B46C1;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .flip-card-back p {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-main);
+    line-height: 1.5;
+  }
+
+  /* Overview Matrix Table */
+  .table-wrapper {
+    overflow-x: auto;
+    padding: 18px;
+    background: #fff;
+  }
+
+  .rpg-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    min-width: 640px;
+  }
+
+  .rpg-table th {
+    background: linear-gradient(135deg, var(--pastel-purple), var(--pastel-blue));
+    color: #fff;
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 0.66rem;
+    padding: 13px;
+    border: 3px solid var(--text-main);
+    text-shadow: 1px 1px 0 var(--text-main);
+  }
+
+  .rpg-table td {
+    padding: 13px;
+    border: 3px solid var(--text-main);
+    font-size: 0.96rem;
+    font-weight: 600;
+    background: #FFFDFB;
+  }
+
+  .rpg-table tr:nth-child(even) td {
+    background: var(--bg-lavender);
+  }
+
+  .rpg-table tr:hover td {
+    background: var(--bg-peach);
+  }
+
+  .modal-pill {
+    display: inline-block;
+    background: var(--pastel-gold);
+    border: 2px solid var(--text-main);
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-family: 'VT323', 'Courier New', monospace;
+    font-size: 1.25rem;
+    font-weight: bold;
+  }
+
+  /* Bottom Slide Navigation Bar */
+  .deck-footer-nav {
+    position: sticky;
+    bottom: 0;
+    z-index: 999;
+    background: rgba(255, 248, 240, 0.96);
+    backdrop-filter: blur(8px);
+    border-top: 4px solid var(--pastel-purple);
+    padding: 11px 18px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .rpg-btn {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 0.62rem;
+    padding: 10px 14px;
+    background: var(--pastel-mint);
+    color: var(--text-main);
+    border: 3px solid var(--text-main);
+    box-shadow: 3px 3px 0 var(--text-main);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+  }
+
+  .rpg-btn:hover:not(:disabled) {
+    background: var(--pastel-gold);
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--text-main), var(--glow-gold);
+  }
+
+  .rpg-btn:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--text-main);
+  }
+
+  .rpg-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .slide-dots {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .dot-btn {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    border: 2px solid var(--text-main);
+    background: #fff;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+
+  .dot-btn.active {
+    background: var(--pastel-pink);
+    transform: scale(1.25);
+    box-shadow: var(--glow-pink);
+  }
+</style>
+</head>
+<body>
+
+  <!-- Save Feedback Toast -->
+  <div id="saveToast" class="save-toast" style="display: none;">✅ Complete index.html downloaded!</div>
+
+  <!-- Top Presentation HUD -->
+  <header class="deck-topbar">
+    <div class="brand-cluster">
+      <span class="level-badge">SLIDE DECK</span>
+      <span class="deck-title-mini">LAND OF DAWN: MODAL AUXILIARIES</span>
+    </div>
+
+    <div class="jump-controls">
+      <label for="slideJump" class="retro-sub" style="font-size: 1.2rem;">Slide:</label>
+      <select id="slideJump" class="slide-select" onchange="goToSlide(Number(this.value))">
+        <option value="0">01. Title &amp; RPG Party</option>
+        <option value="1">02. Core Structural &amp; Practical Rules</option>
+        <option value="2">03. Modal Auxiliary Mindmap / Skill Tree</option>
+        <option value="3">04. 1. Can / Be Able To</option>
+        <option value="4">05. 2. Could</option>
+        <option value="5">06. 3. May</option>
+        <option value="6">07. 4. Might</option>
+        <option value="7">08. 5. Must / Have To</option>
+        <option value="8">09. 6. Should / Ought To</option>
+        <option value="9">10. 7. Will / Would</option>
+        <option value="10">11. 8. Shall</option>
+        <option value="11">12. Overview Matrix Table</option>
+      </select>
+      <span id="slideIndicator" class="slide-counter-pill">2 / 12</span>
+      <button type="button" class="hud-action-btn" onclick="downloadSelfHTML()" title="Download complete standalone index.html">⬇ SAVE HTML</button>
+    </div>
+  </header>
+
+  <!-- Slide Deck Stage -->
+  <main class="presentation-stage">
+
+    <!-- SLIDE 0: TITLE & RPG PARTY -->
+    <section class="slide wood-frame hero-slide-box active">
+      <div class="hero-emblem-row">
+        <!-- 8-Bit Wizard SVG -->
+        <div class="pixel-sprite-card">
+          <div class="pixel-svg-box" style="background: #F3E8FF;">
+            <svg viewBox="0 0 16 16" width="58" height="58" shape-rendering="crispEdges">
+              <rect x="7" y="1" width="2" height="2" fill="#C8A2FF"></rect>
+              <rect x="6" y="3" width="4" height="2" fill="#9F7AEA"></rect>
+              <rect x="4" y="5" width="8" height="2" fill="#805AD5"></rect>
+              <rect x="5" y="7" width="6" height="4" fill="#FED7D7"></rect>
+              <rect x="6" y="8" width="1" height="1" fill="#3D344B"></rect>
+              <rect x="9" y="8" width="1" height="1" fill="#3D344B"></rect>
+              <rect x="4" y="11" width="8" height="4" fill="#9F7AEA"></rect>
+              <rect x="13" y="4" width="1" height="11" fill="#8D6E63"></rect>
+              <rect x="12" y="3" width="3" height="2" fill="#FBD38D"></rect>
+            </svg>
+          </div>
+          <span>8-Bit Wizard</span>
+        </div>
+
+        <!-- 8-Bit Knight SVG -->
+        <div class="pixel-sprite-card">
+          <div class="pixel-svg-box" style="background: #E3F2FD;">
+            <svg viewBox="0 0 16 16" width="58" height="58" shape-rendering="crispEdges">
+              <rect x="6" y="2" width="4" height="2" fill="#FFB5C2"></rect>
+              <rect x="5" y="4" width="6" height="5" fill="#90CDF4"></rect>
+              <rect x="6" y="6" width="4" height="1" fill="#3D344B"></rect>
+              <rect x="4" y="9" width="8" height="5" fill="#63B3ED"></rect>
+              <rect x="2" y="8" width="2" height="5" fill="#FBD38D"></rect>
+              <rect x="13" y="4" width="1" height="8" fill="#CBD5E0"></rect>
+              <rect x="12" y="9" width="3" height="1" fill="#8D6E63"></rect>
+            </svg>
+          </div>
+          <span>8-Bit Knight</span>
+        </div>
+
+        <!-- Spell Book SVG -->
+        <div class="pixel-sprite-card">
+          <div class="pixel-svg-box" style="background: #FFEAE2;">
+            <svg viewBox="0 0 16 16" width="58" height="58" shape-rendering="crispEdges">
+              <rect x="3" y="3" width="10" height="10" fill="#B794F4"></rect>
+              <rect x="4" y="4" width="8" height="8" fill="#FFFDFB"></rect>
+              <rect x="7" y="5" width="2" height="2" fill="#FBD38D"></rect>
+              <rect x="6" y="7" width="4" height="2" fill="#FFB5C2"></rect>
+              <rect x="7" y="9" width="2" height="2" fill="#FBD38D"></rect>
+              <rect x="2" y="3" width="1" height="10" fill="#553C9A"></rect>
+            </svg>
+          </div>
+          <span>Spell Book</span>
+        </div>
+
+        <!-- Treasure Chest SVG -->
+        <div class="pixel-sprite-card">
+          <div class="pixel-svg-box" style="background: #E6F8F3;">
+            <svg viewBox="0 0 16 16" width="58" height="58" shape-rendering="crispEdges">
+              <rect x="3" y="5" width="10" height="3" fill="#D69E2E"></rect>
+              <rect x="3" y="8" width="10" height="5" fill="#B7791F"></rect>
+              <rect x="2" y="7" width="12" height="1" fill="#3D344B"></rect>
+              <rect x="7" y="7" width="2" height="3" fill="#FBD38D"></rect>
+              <rect x="4" y="4" width="8" height="1" fill="#FBD38D"></rect>
+            </svg>
+          </div>
+          <span>Treasure Chest</span>
+        </div>
+
+        <!-- 8-Bit Dragon SVG -->
+        <div class="pixel-sprite-card">
+          <div class="pixel-svg-box" style="background: #FFF8F0;">
+            <svg viewBox="0 0 16 16" width="58" height="58" shape-rendering="crispEdges">
+              <rect x="5" y="2" width="2" height="2" fill="#FBD38D"></rect>
+              <rect x="9" y="2" width="2" height="2" fill="#FBD38D"></rect>
+              <rect x="4" y="4" width="8" height="5" fill="#81E6D9"></rect>
+              <rect x="5" y="6" width="1" height="1" fill="#E53E3E"></rect>
+              <rect x="10" y="6" width="1" height="1" fill="#E53E3E"></rect>
+              <rect x="3" y="9" width="10" height="5" fill="#4FD1C5"></rect>
+              <rect x="6" y="10" width="4" height="4" fill="#FBD38D"></rect>
+            </svg>
+          </div>
+          <span>8-Bit Dragon</span>
+        </div>
+      </div>
+
+      <h1>LAND OF DAWN: MODAL AUXILIARIES</h1>
+      <p class="hero-subtitle">
+        A Pastel 16-Bit Mobile Legends RPG Slide Deck Presentation. Use Previous/Next buttons or Left/Right arrow keys to navigate slides, and hover or tap magic cards to flip examples.
+      </p>
+
+      <div class="status-bars">
+        <div class="stat-pill">💖 12 Interactive Slides</div>
+        <div class="stat-pill">✨ 8 Modal Heroes &amp; Semi-Modals</div>
+        <div class="stat-pill">🏆 100% Self-Contained Offline Ready</div>
+      </div>
+    </section>
+
+    <!-- SLIDE 1: CORE STRUCTURAL & PRACTICAL RULES -->
+    <section class="slide wood-frame">
+      <div class="slide-header">
+        <span class="slide-tag">SLIDE 02 // FOUNDATION CODEX</span>
+        <h2>Core Structural &amp; Practical Rules</h2>
+      </div>
+
+      <div class="rules-grid">
+        <div class="rule-card stone-frame" style="grid-column: 1 / -1; background: linear-gradient(135deg, #FFFDFB, var(--bg-lavender));">
+          <div class="rule-card-header">
+            <div class="rule-icon">🔮</div>
+            <h3>Core Definition</h3>
+          </div>
+          <p>Modal auxiliaries modify the mood of the main verb to express possibility, necessity, permission, ability, or advice.</p>
+        </div>
+
+        <div class="rule-card stone-frame">
+          <div class="rule-card-header">
+            <div class="rule-icon">⚔️</div>
+            <h3>Bare Infinitive Rule</h3>
+          </div>
+          <p>Modals must be immediately followed by the base form of the verb without "to" (Modal+Verbbase), except for semi-modals that naturally include "to" (e.g., ought to, have to, be able to).</p>
+        </div>
+
+        <div class="rule-card stone-frame">
+          <div class="rule-card-header">
+            <div class="rule-icon">🛡️</div>
+            <h3>Invariable Structure</h3>
+          </div>
+          <p>Modals do not change form for different subjects; they never take third-person -s, past tense -ed, or continuous -ing endings.</p>
+        </div>
+
+        <div class="rule-card stone-frame">
+          <div class="rule-card-header">
+            <div class="rule-icon">🐉</div>
+            <h3>No Auxiliary Stacking</h3>
+          </div>
+          <p>You cannot combine two primary modal verbs directly (e.g., will can is incorrect; use will be able to instead).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 2: MINDMAP / SKILL TREE -->
+    <section class="slide wood-frame">
+      <div class="slide-header">
+        <span class="slide-tag">SLIDE 03 // EMBLEM SKILL TREE</span>
+        <h2>Modal Auxiliary Mindmap</h2>
+      </div>
+
+      <div class="skill-tree-wrapper wood-frame">
+        <div class="mindmap-root">
+          <div style="font-size: 1.5rem; margin-bottom: 4px;">📖✨</div>
+          <h3 style="font-size: 0.82rem; margin-bottom: 4px;">MODAL AUXILIARIES &amp; SEMI-MODALS</h3>
+          <p style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted);">
+            Click any Hero Node below to jump straight to that hero's slide!
+          </p>
+        </div>
+
+        <div class="mindmap-branches">
+          <div class="skill-node" onclick="goToSlide(3)">
+            <div class="skill-node-top">
+              <span class="skill-tier">SLIDE 04</span>
+              <span>⚡</span>
+            </div>
+            <h4>1. Can / Be Able To</h4>
+            <p>Present physical or mental ability, general capability, informal permission, informal requests.</p>
+          </div>
+
+          <div class="skill-node" onclick="goToSlide(4)">
+            <div class="skill-node-top">
+              <span class="skill-tier">SLIDE 05</span>
+              <span>🕰️</span>
+            </div>
+            <h4>2. Could</h4>
+            <p>Past ability, polite requests, conditional possibility, tentative suggestions.</p>
+          </div>
+
+          <div class="skill-node" onclick="goToSlide(5)">
+            <div class="skill-node-top">
+              <span class="skill-tier">SLIDE 06</span>
+              <span>👑</span>
+            </div>
+            <h4>3. May</h4>
+            <p>Formal permission, present/future possibility, polite offers.</p>
+          </div>
+
+          <div class="skill-node" onclick="goToSlide(6)">
+            <div class="skill-node-top">
+              <span class="skill-tier">SLIDE 07</span>
+              <span>🌫️</span>
+            </div>
+            <h4>4. Might</h4>
+            <p>Remote or tentative possibility, extremely polite suggestions, speculative scenarios.</p>
+          </div>
+
+          <div class="skill-node" onclick="goToSlide(7)">
+            <div class="skill-node-top">
+              <span class="skill-tier">SLIDE 08</span>
+              <span>🛡️</span>
+            </div>
+            <h4>5. Must / Have To</h4>
+            <p>Strong internal obligation, external rules/regulations, logical deduction (high certainty).</p>
+          </div>
+
+          <div class="skill-node" onclick="goToSlide(8)">
+            <div class="skill-node-top">
+              <span class="skill-tier">SLIDE 09</span>
+              <span>🧭</span>
+            </div>
+            <h4>6. Should / Ought To</h4>
+            <p>Giving advice, moral duty, logical expectations, recommendations.</p>
+          </div>
+
+          <div class="skill-node" onclick="goToSlide(9)">
+            <div class="skill-node-top">
+              <span class="skill-tier">SLIDE 10</span>
+              <span>🔥</span>
+            </div>
+            <h4>7. Will / Would</h4>
+            <p>Future certainty, spontaneous decisions, willingness (Will); past habits, hypothetical conditions, formal requests (Would).</p>
+          </div>
+
+          <div class="skill-node" onclick="goToSlide(10)">
+            <div class="skill-node-top">
+              <span class="skill-tier">SLIDE 11</span>
+              <span>📜</span>
+            </div>
+            <h4>8. Shall</h4>
+            <p>Formal offers, suggestions (1st person), legal requirements, binding agreements.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 3: 1. CAN / BE ABLE TO -->
+    <section class="slide wood-frame">
+      <div class="slide-header">
+        <span class="slide-tag">SLIDE 04 // HERO 01</span>
+        <h2>1. Can / Be Able To</h2>
+      </div>
+
+      <div class="panel-header">
+        <div class="panel-title-group">
+          <div class="hero-avatar" style="background: #E6F8F3;">
+            <svg viewBox="0 0 16 16" width="54" height="54" shape-rendering="crispEdges">
+              <rect x="5" y="2" width="6" height="2" fill="#3D344B"></rect>
+              <rect x="5" y="4" width="6" height="4" fill="#FED7D7"></rect>
+              <rect x="6" y="5" width="1" height="1" fill="#3D344B"></rect>
+              <rect x="9" y="5" width="1" height="1" fill="#3D344B"></rect>
+              <rect x="4" y="8" width="8" height="5" fill="#48BB78"></rect>
+              <rect x="12" y="7" width="2" height="3" fill="#FBD38D"></rect>
+            </svg>
+          </div>
+          <div>
+            <span class="hero-class-badge">CLASS: AGILE FIGHTER</span>
+            <h3>1. Can / Be Able To</h3>
+          </div>
+        </div>
+        <div class="formula-box">
+          <strong>Form:</strong> Subject + can / am, is, are able to + Base Verb
+        </div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-box">
+          <strong>Language Functions</strong>
+          Present physical or mental ability, general capability, informal permission, informal requests.
+        </div>
+        <div class="meta-box">
+          <strong>Context</strong>
+          Academic skills, personal achievements, everyday casual interactions, workplace capabilities.
+        </div>
+      </div>
+
+      <div class="examples-bar">
+        <div class="examples-title">🃏 Usage &amp; Extended Examples</div>
+        <button type="button" class="flip-all-btn" onclick="toggleSlideCards(this)">🔄 Flip All Cards on Slide</button>
+      </div>
+      <div class="magic-cards-grid">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">⚡</div>
+              <h4>Ability</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Ability</span>
+              <p>"Despite the continuous rainfall during peak rush hour, the engineering team can resolve complex network outages within a remarkably short timeframe."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">💼</div>
+              <h4>Practical Function (Workplace Capability)</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Practical Function (Workplace Capability)</span>
+              <p>"Candidates who complete the advanced software development bootcamp are able to design and deploy scalable cloud infrastructure independently."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">🗝️</div>
+              <h4>Permission</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Permission</span>
+              <p>"Once you finish compiling the financial report for the third quarter, you can take an early lunch break."</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: 2. COULD -->
+    <section class="slide stone-frame">
+      <div class="slide-header">
+        <span class="slide-tag">SLIDE 05 // HERO 02</span>
+        <h2>2. Could</h2>
+      </div>
+
+      <div class="panel-header">
+        <div class="panel-title-group">
+          <div class="hero-avatar" style="background: #F3E8FF;">
+            <svg viewBox="0 0 16 16" width="54" height="54" shape-rendering="crispEdges">
+              <rect x="6" y="2" width="4" height="2" fill="#9F7AEA"></rect>
+              <rect x="5" y="4" width="6" height="4" fill="#FED7D7"></rect>
+              <rect x="6" y="5" width="1" height="1" fill="#3D344B"></rect>
+              <rect x="9" y="5" width="1" height="1" fill="#3D344B"></rect>
+              <rect x="4" y="8" width="8" height="5" fill="#805AD5"></rect>
+              <rect x="12" y="5" width="2" height="5" fill="#FBD38D"></rect>
+            </svg>
+          </div>
+          <div>
+            <span class="hero-class-badge">CLASS: CHRONO MAGE</span>
+            <h3>2. Could</h3>
+          </div>
+        </div>
+        <div class="formula-box">
+          <strong>Form:</strong> Subject + could + Base Verb
+        </div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-box">
+          <strong>Language Functions</strong>
+          Past ability, polite requests, conditional possibility, tentative suggestions.
+        </div>
+        <div class="meta-box">
+          <strong>Context</strong>
+          Formal inquiries, historical narrative accounts, hypothetical scenarios, diplomatic communication.
+        </div>
+      </div>
+
+      <div class="examples-bar">
+        <div class="examples-title">🃏 Usage &amp; Extended Examples</div>
+        <button type="button" class="flip-all-btn" onclick="toggleSlideCards(this)">🔄 Flip All Cards on Slide</button>
+      </div>
+      <div class="magic-cards-grid">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">📜</div>
+              <h4>Past Ability</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Past Ability</span>
+              <p>"During her early years as a research assistant at the university, she could read and translate complex Latin legal manuscripts without consulting a dictionary."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">🕊️</div>
+              <h4>Polite Request</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Polite Request</span>
+              <p>"Could you please provide me with a detailed breakdown of the shipping expenses before we finalize the procurement contract?"</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">🔮</div>
+              <h4>Conditional Possibility</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Conditional Possibility</span>
+              <p>"If the logistics department optimizes the delivery routes next week, we could reduce our total operational costs by nearly fifteen percent."</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: 3. MAY -->
+    <section class="slide wood-frame">
+      <div class="slide-header">
+        <span class="slide-tag">SLIDE 06 // HERO 03</span>
+        <h2>3. May</h2>
+      </div>
+
+      <div class="panel-header">
+        <div class="panel-title-group">
+          <div class="hero-avatar" style="background: #FFEAE2;">
+            <svg viewBox="0 0 16 16" width="54" height="54" shape-rendering="crispEdges">
+              <rect x="5" y="2" width="6" height="2" fill="#FBD38D"></rect>
+              <rect x="5" y="4" width="6" height="4" fill="#FED7D7"></rect>
+              <rect x="6" y="5" width="1" height="1" fill="#3D344B"></rect>
+              <rect x="9" y="5" width="1" height="1" fill="#3D344B"></rect>
+              <rect x="4" y="8" width="8" height="5" fill="#F687B3"></rect>
+              <rect x="12" y="6" width="2" height="4" fill="#90CDF4"></rect>
+            </svg>
+          </div>
+          <div>
+            <span class="hero-class-badge">CLASS: ROYAL ENCHANTRESS</span>
+            <h3>3. May</h3>
+          </div>
+        </div>
+        <div class="formula-box">
+          <strong>Form:</strong> Subject + may + Base Verb
+        </div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-box">
+          <strong>Language Functions</strong>
+          Formal permission, present/future possibility, polite offers.
+        </div>
+        <div class="meta-box">
+          <strong>Context</strong>
+          Academic writing, corporate policies, institutional guidelines, formal hospitality.
+        </div>
+      </div>
+
+      <div class="examples-bar">
+        <div class="examples-title">🃏 Usage &amp; Extended Examples</div>
+        <button type="button" class="flip-all-btn" onclick="toggleSlideCards(this)">🔄 Flip All Cards on Slide</button>
+      </div>
+      <div class="magic-cards-grid">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">👑</div>
+              <h4>Formal Permission</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Formal Permission</span>
+              <p>"Students who have submitted their signed parental consent waivers may access the specialized chemistry laboratory after regular school hours."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">⛈️</div>
+              <h4>Possibility</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Possibility</span>
+              <p>"According to the latest meteorological forecasts, severe thunderstorms may cause unexpected delays along the southern shipping corridors over the weekend."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">🎁</div>
+              <h4>Polite Offer</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Polite Offer</span>
+              <p>"May I assist you with carrying those bulky archived files to the administrative office upstairs?"</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 6: 4. MIGHT -->
+    <section class="slide stone-frame">
+      <div class="slide-header">
+        <span class="slide-tag">SLIDE 07 // HERO 04</span>
+        <h2>4. Might</h2>
+      </div>
+
+      <div class="panel-header">
+        <div class="panel-title-group">
+          <div class="hero-avatar" style="background: #E3F2FD;">
+            <svg viewBox="0 0 16 16" width="54" height="54" shape-rendering="crispEdges">
+              <rect x="4" y="3" width="8" height="2" fill="#4A5568"></rect>
+              <rect x="5" y="5" width="6" height="3" fill="#FED7D7"></rect>
+              <rect x="6" y="6" width="1" height="1" fill="#3D344B"></rect>
+              <rect x="9" y="6" width="1" height="1" fill="#3D344B"></rect>
+              <rect x="4" y="8" width="8" height="5" fill="#63B3ED"></rect>
+              <rect x="2" y="7" width="2" height="4" fill="#CBD5E0"></rect>
+            </svg>
+          </div>
+          <div>
+            <span class="hero-class-badge">CLASS: MIST ORACLE</span>
+            <h3>4. Might</h3>
+          </div>
+        </div>
+        <div class="formula-box">
+          <strong>Form:</strong> Subject + might + Base Verb
+        </div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-box">
+          <strong>Language Functions</strong>
+          Remote or tentative possibility, extremely polite suggestions, speculative scenarios.
+        </div>
+        <div class="meta-box">
+          <strong>Context</strong>
+          Risk assessment reports, cautious predictions, tentative suggestions.
+        </div>
+      </div>
+
+      <div class="examples-bar">
+        <div class="examples-title">🃏 Usage &amp; Extended Examples</div>
+        <button type="button" class="flip-all-btn" onclick="toggleSlideCards(this)">🔄 Flip All Cards on Slide</button>
+      </div>
+      <div class="magic-cards-grid">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">🌫️</div>
+              <h4>Tentative Possibility</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Tentative Possibility</span>
+              <p>"Although the initial trial phase yielded promising results, the development team might encounter unforeseen technical hurdles during full-scale manufacturing."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">💡</div>
+              <h4>Cautious Suggestion</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Cautious Suggestion</span>
+              <p>"Considering the current economic volatility, we might want to postpone the planned expansion into international markets until next year."</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 7: 5. MUST / HAVE TO -->
+    <section class="slide wood-frame">
+      <div class="slide-header">
+        <span class="slide-tag">SLIDE 08 // HERO 05</span>
+        <h2>5. Must / Have To</h2>
+      </div>
+
+      <div class="panel-header">
+        <div class="panel-title-group">
+          <div class="hero-avatar" style="background: #FFF8F0;">
+            <svg viewBox="0 0 16 16" width="54" height="54" shape-rendering="crispEdges">
+              <rect x="4" y="2" width="8" height="6" fill="#A0AEC0"></rect>
+              <rect x="6" y="4" width="4" height="2" fill="#3D344B"></rect>
+              <rect x="3" y="8" width="10" height="5" fill="#718096"></rect>
+              <rect x="1" y="7" width="3" height="6" fill="#FBD38D"></rect>
+            </svg>
+          </div>
+          <div>
+            <span class="hero-class-badge">CLASS: FORTRESS TANK</span>
+            <h3>5. Must / Have To</h3>
+          </div>
+        </div>
+        <div class="formula-box">
+          <strong>Form:</strong> Subject + must / have to / has to + Base Verb
+        </div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-box">
+          <strong>Language Functions</strong>
+          Strong internal obligation, external rules/regulations, logical deduction (high certainty).
+        </div>
+        <div class="meta-box">
+          <strong>Context</strong>
+          Institutional compliance, safety protocols, logical conclusions based on evidence.
+        </div>
+      </div>
+
+      <div class="examples-bar">
+        <div class="examples-title">🃏 Usage &amp; Extended Examples</div>
+        <button type="button" class="flip-all-btn" onclick="toggleSlideCards(this)">🔄 Flip All Cards on Slide</button>
+      </div>
+      <div class="magic-cards-grid">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">🔍</div>
+              <h4>Logical Deduction</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Logical Deduction</span>
+              <p>"Given that all the laboratory instruments are carefully calibrated and double-checked, the results of the experiment must be accurate."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">📋</div>
+              <h4>External Obligation (Have to)</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">External Obligation (Have to)</span>
+              <p>"All senior accountants have to complete the mandatory audit training program before the fiscal year-end review begins."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">🚫</div>
+              <h4>Prohibition (Must not)</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Prohibition (Must not)</span>
+              <p>"Visitors must not enter the hazardous chemical storage zone without wearing full protective gear and official security passes."</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 8: 6. SHOULD / OUGHT TO -->
+    <section class="slide stone-frame">
+      <div class="slide-header">
+        <span class="slide-tag">SLIDE 09 // HERO 06</span>
+        <h2>6. Should / Ought To</h2>
+      </div>
+
+      <div class="panel-header">
+        <div class="panel-title-group">
+          <div class="hero-avatar" style="background: #E6F8F3;">
+            <svg viewBox="0 0 16 16" width="54" height="54" shape-rendering="crispEdges">
+              <rect x="5" y="2" width="6" height="2" fill="#FBD38D"></rect>
+              <rect x="5" y="4" width="6" height="4" fill="#FED7D7"></rect>
+              <rect x="6" y="5" width="1" height="1" fill="#3D344B"></rect>
+              <rect x="9" y="5" width="1" height="1" fill="#3D344B"></rect>
+              <rect x="4" y="8" width="8" height="5" fill="#81E6D9"></rect>
+              <rect x="12" y="5" width="2" height="5" fill="#68D391"></rect>
+            </svg>
+          </div>
+          <div>
+            <span class="hero-class-badge">CLASS: ELVEN SUPPORT</span>
+            <h3>6. Should / Ought To</h3>
+          </div>
+        </div>
+        <div class="formula-box">
+          <strong>Form:</strong> Subject + should / ought to + Base Verb
+        </div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-box">
+          <strong>Language Functions</strong>
+          Giving advice, moral duty, logical expectations, recommendations.
+        </div>
+        <div class="meta-box">
+          <strong>Context</strong>
+          Peer mentoring, healthcare consultations, policy recommendations, personal guidance.
+        </div>
+      </div>
+
+      <div class="examples-bar">
+        <div class="examples-title">🃏 Usage &amp; Extended Examples</div>
+        <button type="button" class="flip-all-btn" onclick="toggleSlideCards(this)">🔄 Flip All Cards on Slide</button>
+      </div>
+      <div class="magic-cards-grid">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">💚</div>
+              <h4>Recommendation</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Recommendation</span>
+              <p>"To maintain optimal physical performance and reduce injury risks, athletes should incorporate thorough warm-up and cool-down routines into every practice session."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">📦</div>
+              <h4>Expectation/Probability</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Expectation/Probability</span>
+              <p>"If the courier service dispatched the package early this morning, it ought to arrive at the regional distribution center by late afternoon."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">🌱</div>
+              <h4>Moral Obligation</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Moral Obligation</span>
+              <p>"As responsible citizens of a growing urban community, we ought to support local initiatives that aim to preserve green spaces."</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 9: 7. WILL / WOULD -->
+    <section class="slide wood-frame">
+      <div class="slide-header">
+        <span class="slide-tag">SLIDE 10 // HERO 07</span>
+        <h2>7. Will / Would</h2>
+      </div>
+
+      <div class="panel-header">
+        <div class="panel-title-group">
+          <div class="hero-avatar" style="background: #FFEAE2;">
+            <svg viewBox="0 0 16 16" width="54" height="54" shape-rendering="crispEdges">
+              <rect x="5" y="2" width="6" height="2" fill="#F56565"></rect>
+              <rect x="5" y="4" width="6" height="4" fill="#FED7D7"></rect>
+              <rect x="6" y="5" width="1" height="1" fill="#3D344B"></rect>
+              <rect x="9" y="5" width="1" height="1" fill="#3D344B"></rect>
+              <rect x="4" y="8" width="8" height="5" fill="#ED8936"></rect>
+              <rect x="12" y="6" width="2" height="3" fill="#FBD38D"></rect>
+            </svg>
+          </div>
+          <div>
+            <span class="hero-class-badge">CLASS: BLAZE MARKSMAN</span>
+            <h3>7. Will / Would</h3>
+          </div>
+        </div>
+        <div class="formula-box">
+          <strong>Form:</strong> Subject + will / would + Base Verb
+        </div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-box">
+          <strong>Language Functions</strong>
+          Future certainty, spontaneous decisions, willingness (Will); past habits, hypothetical conditions, formal requests (Would).
+        </div>
+        <div class="meta-box">
+          <strong>Context</strong>
+          Strategic planning, commitments, narrative flashbacks, formal invitations.
+        </div>
+      </div>
+
+      <div class="examples-bar">
+        <div class="examples-title">🃏 Usage &amp; Extended Examples</div>
+        <button type="button" class="flip-all-btn" onclick="toggleSlideCards(this)">🔄 Flip All Cards on Slide</button>
+      </div>
+      <div class="magic-cards-grid">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">🔥</div>
+              <h4>Future Commitment</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Future Commitment</span>
+              <p>"Our customer support team will process your refund request within three business days after receiving the returned merchandise."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">🌊</div>
+              <h4>Past Habit (Would)</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Past Habit (Would)</span>
+              <p>"During childhood summer holidays spent at their grandparents' coastal farm, they would spend hours exploring the rocky shores together."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">🏡</div>
+              <h4>Hypothetical Preference</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Hypothetical Preference</span>
+              <p>"If given the choice between living in a bustling metropolis or a quiet rural town, I would choose the peaceful countryside without hesitation."</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 10: 8. SHALL -->
+    <section class="slide stone-frame">
+      <div class="slide-header">
+        <span class="slide-tag">SLIDE 11 // HERO 08</span>
+        <h2>8. Shall</h2>
+      </div>
+
+      <div class="panel-header">
+        <div class="panel-title-group">
+          <div class="hero-avatar" style="background: #F3E8FF;">
+            <svg viewBox="0 0 16 16" width="54" height="54" shape-rendering="crispEdges">
+              <rect x="5" y="2" width="6" height="2" fill="#FBD38D"></rect>
+              <rect x="5" y="4" width="6" height="4" fill="#FED7D7"></rect>
+              <rect x="6" y="5" width="1" height="1" fill="#3D344B"></rect>
+              <rect x="9" y="5" width="1" height="1" fill="#3D344B"></rect>
+              <rect x="4" y="8" width="8" height="5" fill="#90CDF4"></rect>
+              <rect x="12" y="4" width="1" height="8" fill="#FBD38D"></rect>
+            </svg>
+          </div>
+          <div>
+            <span class="hero-class-badge">CLASS: IMPERIAL ARBITER</span>
+            <h3>8. Shall</h3>
+          </div>
+        </div>
+        <div class="formula-box">
+          <strong>Form:</strong> Subject + shall + Base Verb
+        </div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-box">
+          <strong>Language Functions</strong>
+          Formal offers, suggestions (1st person), legal requirements, binding agreements.
+        </div>
+        <div class="meta-box">
+          <strong>Context</strong>
+          Legal contracts, formal protocol, official regulations.
+        </div>
+      </div>
+
+      <div class="examples-bar">
+        <div class="examples-title">🃏 Usage &amp; Extended Examples</div>
+        <button type="button" class="flip-all-btn" onclick="toggleSlideCards(this)">🔄 Flip All Cards on Slide</button>
+      </div>
+      <div class="magic-cards-grid">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">⚖️</div>
+              <h4>Legal Requirement</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Legal Requirement</span>
+              <p>"The tenant shall pay the full monthly rental amount on or before the first calendar day of each consecutive month."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="card-rune">🏛️</div>
+              <h4>Formal Suggestion</h4>
+              <span class="flip-hint">Tap / Hover to Flip</span>
+            </div>
+            <div class="flip-card-back">
+              <span class="back-label">Formal Suggestion</span>
+              <p>"Shall we convene the executive board meeting at nine o'clock tomorrow morning to finalize the annual budget allocations?"</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 11: OVERVIEW MATRIX TABLE -->
+    <section class="slide wood-frame">
+      <div class="slide-header">
+        <span class="slide-tag">SLIDE 12 // GRAND TREASURE TABLE</span>
+        <h2>Overview Matrix: Practical Functions vs. Modals</h2>
+      </div>
+
+      <div class="table-wrapper wood-frame">
+        <table class="rpg-table">
+          <thead>
+            <tr>
+              <th>Function Category</th>
+              <th>Primary Modals Used</th>
+              <th>Nuance / Strength Level</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>High Certainty / Deduction</td>
+              <td><span class="modal-pill">Must, Will</span></td>
+              <td>Near 100% certainty based on facts or strong evidence</td>
+            </tr>
+            <tr>
+              <td>Moderate Probability</td>
+              <td><span class="modal-pill">Should, Ought to</span></td>
+              <td>Expected to happen based on normal circumstances</td>
+            </tr>
+            <tr>
+              <td>Low Certainty / Possibility</td>
+              <td><span class="modal-pill">May, Might, Could</span></td>
+              <td>Speculative, conditional, or tentative</td>
+            </tr>
+            <tr>
+              <td>Formal Permission</td>
+              <td><span class="modal-pill">May, Can</span></td>
+              <td>May is formal/written; Can is informal/spoken</td>
+            </tr>
+            <tr>
+              <td>Prohibition</td>
+              <td><span class="modal-pill">Must not, Cannot</span></td>
+              <td>Absolute restriction (Must not) vs lack of permission (Cannot)</td>
+            </tr>
+            <tr>
+              <td>Absence of Obligation</td>
+              <td><span class="modal-pill">Don't have to, Needn't</span></td>
+              <td>Optional; no necessity exists</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Slide Controls -->
+  <footer class="deck-footer-nav">
+    <button id="prevBtn" class="rpg-btn" onclick="stepSlide(-1)">◀ PREVIOUS SLIDE</button>
+    <div id="slideDots" class="slide-dots" aria-label="Slide indicators"><button type="button" class="dot-btn" title="Go to Slide 1" aria-label="Go to Slide 1"></button><button type="button" class="dot-btn active" title="Go to Slide 2" aria-label="Go to Slide 2"></button><button type="button" class="dot-btn" title="Go to Slide 3" aria-label="Go to Slide 3"></button><button type="button" class="dot-btn" title="Go to Slide 4" aria-label="Go to Slide 4"></button><button type="button" class="dot-btn" title="Go to Slide 5" aria-label="Go to Slide 5"></button><button type="button" class="dot-btn" title="Go to Slide 6" aria-label="Go to Slide 6"></button><button type="button" class="dot-btn" title="Go to Slide 7" aria-label="Go to Slide 7"></button><button type="button" class="dot-btn" title="Go to Slide 8" aria-label="Go to Slide 8"></button><button type="button" class="dot-btn" title="Go to Slide 9" aria-label="Go to Slide 9"></button><button type="button" class="dot-btn" title="Go to Slide 10" aria-label="Go to Slide 10"></button><button type="button" class="dot-btn" title="Go to Slide 11" aria-label="Go to Slide 11"></button><button type="button" class="dot-btn" title="Go to Slide 12" aria-label="Go to Slide 12"></button></div>
+    <button id="nextBtn" class="rpg-btn" onclick="stepSlide(1)">NEXT SLIDE ▶</button>
+  </footer>
+
+  <script>
+    // Full-screen Slide Deck controller with arrow key, dropdown, dot navigation, and offline-safe HTML export
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const slideSelect = document.getElementById('slideJump');
+    const slideIndicator = document.getElementById('slideIndicator');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const dotsContainer = document.getElementById('slideDots');
+
+    let activeSlideIndex = 0;
+
+    function buildDots() {
+      dotsContainer.innerHTML = '';
+      slides.forEach((_, idx) => {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'dot-btn' + (idx === activeSlideIndex ? ' active' : '');
+        dot.title = `Go to Slide ${idx + 1}`;
+        dot.setAttribute('aria-label', `Go to Slide ${idx + 1}`);
+        dot.onclick = () => goToSlide(idx);
+        dotsContainer.appendChild(dot);
+      });
+    }
+
+    function updateDeckUI() {
+      slides.forEach((slide, idx) => {
+        slide.classList.toggle('active', idx === activeSlideIndex);
+      });
+
+      slideSelect.value = String(activeSlideIndex);
+      slideIndicator.textContent = `${activeSlideIndex + 1} / ${slides.length}`;
+      prevBtn.disabled = activeSlideIndex === 0;
+      nextBtn.disabled = activeSlideIndex === slides.length - 1;
+
+      Array.from(dotsContainer.children).forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === activeSlideIndex);
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goToSlide(index) {
+      if (index < 0 || index >= slides.length) return;
+      activeSlideIndex = index;
+      updateDeckUI();
+    }
+
+    function stepSlide(delta) {
+      goToSlide(activeSlideIndex + delta);
+    }
+
+    function toggleSlideCards(buttonEl) {
+      const parentSlide = buttonEl.closest('.slide');
+      if (!parentSlide) return;
+      const cards = Array.from(parentSlide.querySelectorAll('.flip-card'));
+      const anyUnflipped = cards.some(card => !card.classList.contains('flipped'));
+      cards.forEach(card => {
+        card.classList.toggle('flipped', anyUnflipped);
+      });
+    }
+
+    function downloadSelfHTML() {
+      try {
+        const cloneDoc = document.documentElement.cloneNode(true);
+        const toast = cloneDoc.querySelector('#saveToast');
+        if (toast) toast.style.display = 'none';
+
+        const clonedSlides = Array.from(cloneDoc.querySelectorAll('.slide'));
+        clonedSlides.forEach((s, i) => s.classList.toggle('active', i === 0));
+
+        const clonedCards = Array.from(cloneDoc.querySelectorAll('.flip-card'));
+        clonedCards.forEach(c => c.classList.remove('flipped'));
+
+        const fullHtml = '<!DOCTYPE html>\n' + cloneDoc.outerHTML;
+        const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'index.html';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        const liveToast = document.getElementById('saveToast');
+        if (liveToast) {
+          liveToast.style.display = 'block';
+          setTimeout(() => { liveToast.style.display = 'none'; }, 3200);
+        }
+      } catch (err) {
+        console.error('Download failed:', err);
+      }
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight' || event.key === 'PageDown') {
+        stepSlide(1);
+      } else if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
+        stepSlide(-1);
+      }
+    });
+
+    buildDots();
+    updateDeckUI();
+  </script>
+
+</body></html>
